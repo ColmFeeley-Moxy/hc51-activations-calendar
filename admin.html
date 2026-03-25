@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HC51 Activations — Admin</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --orange:#f0911e;--orange-l:#f8b05f;--orange-pl:#fccc96;--orange-w:#fee7ce;
+  --dark:#525252;--grey:#878787;--grey-l:#b2b2b2;--grey-pl:#dadada;--border:#e4e4e4;
+  --green:#92cc5e;--green-pl:#c6e0aa;
+  --blue:#6573ba;--blue-pl:#bac0db;
+  --pink:#d65f75;--pink-pl:#e2bac3;
+  --surface:#f5f5f5;--white:#fff;
+  --sidebar:220px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  background:var(--surface);color:var(--dark);display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar);background:var(--dark);min-height:100vh;
+  position:fixed;top:0;left:0;display:flex;flex-direction:column;z-index:100}
+.sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.sidebar-logo svg{display:block;margin-bottom:10px}
+.sidebar-label{font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;
+  color:rgba(255,255,255,0.35);margin-bottom:2px}
+.sidebar-title{font-size:12px;font-weight:600;color:#fff}
+.sidebar-badge{display:inline-block;background:rgba(240,145,30,0.2);color:var(--orange);
+  font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+  padding:2px 6px;border-radius:3px;margin-top:5px}
+.nav-section{padding:16px 14px 6px;font-size:9px;font-weight:700;letter-spacing:0.12em;
+  text-transform:uppercase;color:rgba(255,255,255,0.3)}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 18px;cursor:pointer;
+  color:rgba(255,255,255,0.6);font-size:12.5px;transition:all 0.1s;
+  border-left:2px solid transparent;text-decoration:none}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,0.05)}
+.nav-item.active{color:#fff;border-left-color:var(--orange);background:rgba(255,255,255,0.06)}
+.nav-item .icon{width:14px;text-align:center;flex-shrink:0;opacity:0.7}
+.nav-item.active .icon{opacity:1}
+.sidebar-footer{margin-top:auto;padding:16px 18px;border-top:1px solid rgba(255,255,255,0.08)}
+.sidebar-footer a{font-size:12px;color:rgba(255,255,255,0.5);text-decoration:none;
+  display:flex;align-items:center;gap:6px}
+.sidebar-footer a:hover{color:#fff}
+
+/* MAIN */
+.main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column}
+
+/* TOPBAR */
+.topbar{background:var(--white);border-bottom:1px solid var(--border);
+  padding:0 28px;height:52px;display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.page-title{font-size:15px;font-weight:600;color:var(--dark)}
+.breadcrumb{font-size:12px;color:var(--grey-l);display:flex;align-items:center;gap:6px}
+.breadcrumb span{color:var(--grey)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.btn{padding:7px 14px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer;
+  border:none;transition:all 0.12s;display:inline-flex;align-items:center;gap:5px}
+.btn-primary{background:var(--orange);color:#fff}
+.btn-primary:hover{background:#d97e15}
+.btn-secondary{background:var(--white);color:var(--dark);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--surface);border-color:var(--grey-l)}
+.btn-ghost{background:transparent;color:var(--grey);border:1px solid transparent;padding:6px 10px}
+.btn-ghost:hover{background:var(--surface);color:var(--dark)}
+.btn-danger{background:var(--pink-pl);color:var(--pink);border:1px solid var(--pink-pl)}
+.btn-danger:hover{background:var(--pink);color:#fff}
+.btn-success{background:#2d7a4f;color:#fff}
+.btn-success:hover{background:#246040}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--orange);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:800;color:#fff;letter-spacing:0.04em}
+
+/* PAGE BODY */
+.page-body{padding:24px 28px;flex:1}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:16px 18px}
+.stat-label{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--grey-l);margin-bottom:6px}
+.stat-value{font-size:24px;font-weight:700;color:var(--dark);line-height:1}
+.stat-sub{font-size:11px;color:var(--grey-l);margin-top:4px}
+.stat-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px}
+
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:200px;max-width:320px}
+.search-wrap input{width:100%;padding:7px 10px 7px 30px;border:1px solid var(--border);
+  border-radius:6px;font-size:13px;background:var(--white);color:var(--dark);outline:none}
+.search-wrap input:focus{border-color:var(--grey-l)}
+.search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--grey-l);font-size:13px}
+.filter-select{padding:7px 10px;border:1px solid var(--border);border-radius:6px;
+  font-size:12.5px;background:var(--white);color:var(--dark);cursor:pointer;outline:none}
+.toolbar-right{margin-left:auto;display:flex;gap:8px}
+
+/* VIEW TABS */
+.view-tabs{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:2px}
+.view-tab{padding:5px 12px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;
+  color:var(--grey);transition:all 0.1s;user-select:none}
+.view-tab.active{background:var(--white);color:var(--dark);box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+
+/* TABLE */
+.table-wrap{background:var(--white);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.table-header{display:grid;grid-template-columns:2fr 1fr 100px 100px 80px 100px 80px;
+  padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);
+  font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--grey)}
+.table-row{display:grid;grid-template-columns:2fr 1fr 100px 100px 80px 100px 80px;
+  padding:11px 16px;border-bottom:1px solid var(--border);align-items:center;
+  transition:background 0.08s;cursor:pointer}
+.table-row:last-child{border-bottom:none}
+.table-row:hover{background:#fafafa}
+.cell-title{font-size:13px;font-weight:600;color:var(--dark);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;padding-right:12px}
+.cell-title .cell-sub{font-size:11px;font-weight:400;color:var(--grey-l);margin-top:1px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cell-date{font-size:12px;color:var(--dark);font-variant-numeric:tabular-nums}
+.cell-date .month-badge{font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;
+  background:var(--surface);color:var(--grey);margin-left:4px}
+
+/* CHIPS */
+.chip{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;
+  font-size:10.5px;font-weight:600;white-space:nowrap}
+.chip-mkt{background:var(--orange-w);color:var(--dark)}
+.chip-sus{background:var(--green-pl);color:var(--dark)}
+.chip-pc{background:var(--blue-pl);color:var(--dark)}
+.chip-dot{width:5px;height:5px;border-radius:50%}
+.chip-mkt .chip-dot{background:var(--orange)}
+.chip-sus .chip-dot{background:var(--green)}
+.chip-pc .chip-dot{background:var(--blue)}
+.tier-badge{display:inline-block;padding:2px 6px;border-radius:3px;font-size:10px;
+  font-weight:700;letter-spacing:0.04em;text-transform:uppercase}
+.tier-spark{background:var(--orange-pl);color:var(--dark)}
+.tier-glow{background:var(--orange-l);color:#fff}
+.tier-flare{background:var(--orange);color:#fff}
+.tier-none{background:var(--grey-pl);color:var(--grey)}
+.status-badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.04em}
+.status-published{background:#e6f7ee;color:#2d7a4f}
+.status-draft{background:var(--orange-w);color:#9a5f0f}
+
+/* MONTH GRID */
+.month-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.month-card{background:var(--white);border:1px solid var(--border);border-radius:8px;
+  overflow:hidden;cursor:pointer;transition:all 0.1s}
+.month-card:hover{border-color:var(--grey-l);box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.month-card-head{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border)}
+.month-name{font-size:13px;font-weight:700;color:var(--dark)}
+.month-year{font-size:11px;color:var(--grey-l)}
+.month-count{font-size:20px;font-weight:700;color:var(--dark);line-height:1}
+.month-card-body{padding:10px 14px}
+.month-bar-row{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.month-bar-label{font-size:9px;color:var(--grey-l);width:14px}
+.month-bar-track{flex:1;height:4px;background:var(--grey-pl);border-radius:2px;overflow:hidden}
+.month-bar-fill{height:100%;border-radius:2px}
+.month-bar-fill.mkt{background:var(--orange)}
+.month-bar-fill.sus{background:var(--green)}
+.month-bar-fill.pc{background:var(--blue)}
+.month-bar-num{font-size:10px;color:var(--grey-l);width:12px;text-align:right}
+.month-empty{padding:14px;text-align:center}
+.month-empty-icon{font-size:20px;margin-bottom:4px;opacity:0.4}
+.month-empty-text{font-size:11px;color:var(--grey-l)}
+.month-add-btn{display:block;width:calc(100% - 28px);margin:0 14px 12px;
+  padding:6px;border-radius:5px;border:1px dashed var(--border);background:transparent;
+  color:var(--grey);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.1s;text-align:center}
+.month-add-btn:hover{border-color:var(--orange);color:var(--orange);background:var(--orange-w)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(82,82,82,0.45);
+  z-index:500;display:flex;align-items:flex-start;justify-content:center;
+  padding:32px 20px;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity 0.15s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--white);border-radius:12px;width:100%;max-width:680px;
+  box-shadow:0 16px 48px rgba(0,0,0,0.16);transform:translateY(-10px);transition:transform 0.15s}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-head{padding:20px 24px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:16px;font-weight:700;color:var(--dark)}
+.modal-close{width:28px;height:28px;border-radius:5px;border:1px solid var(--border);
+  background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:var(--grey);font-size:14px;transition:all 0.1s}
+.modal-close:hover{background:var(--surface);color:var(--dark)}
+.modal-body{padding:20px 24px;max-height:72vh;overflow-y:auto}
+.modal-footer{padding:14px 24px 18px;border-top:1px solid var(--border);
+  display:flex;justify-content:flex-end;gap:8px;align-items:center}
+
+/* FORM */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-row.single{grid-template-columns:1fr}
+.form-row.triple{grid-template-columns:1fr 1fr 1fr}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label{font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--grey)}
+.form-label .req{color:var(--orange);margin-left:2px}
+.form-input{padding:8px 10px;border:1px solid var(--border);border-radius:6px;
+  font-size:13px;color:var(--dark);outline:none;background:var(--white);
+  font-family:inherit;transition:border 0.1s}
+.form-input:focus{border-color:var(--grey)}
+.form-input::placeholder{color:var(--grey-l)}
+select.form-input{cursor:pointer}
+.form-hint{font-size:10.5px;color:var(--grey-l);margin-top:2px}
+.char-count{font-size:10px;color:var(--grey-l);text-align:right;margin-top:2px}
+.form-divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+.form-section-label{font-size:10px;font-weight:700;letter-spacing:0.1em;
+  text-transform:uppercase;color:var(--grey);margin-bottom:10px;display:flex;
+  align-items:center;gap:6px}
+
+/* ── GOALS CHECKBOXES ── */
+.goals-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 10px}
+.goal-check-item{display:flex;align-items:center;gap:7px;padding:5px 8px;
+  border-radius:5px;border:1px solid var(--border);cursor:pointer;
+  transition:all 0.1s;user-select:none;background:var(--white)}
+.goal-check-item:hover{border-color:var(--grey-l);background:var(--surface)}
+.goal-check-item.checked{border-color:var(--orange);background:var(--orange-w)}
+.goal-check-item input[type=checkbox]{
+  width:14px;height:14px;cursor:pointer;accent-color:var(--orange);flex-shrink:0}
+.goal-check-label{font-size:12px;font-weight:500;color:var(--dark);cursor:pointer}
+.goal-check-item.checked .goal-check-label{font-weight:600;color:var(--dark)}
+/* Other field */
+.goal-other-wrap{margin-top:8px;display:none}
+.goal-other-wrap.visible{display:flex;align-items:center;gap:8px}
+.goal-other-wrap input{flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:6px;
+  font-size:13px;color:var(--dark);outline:none;font-family:inherit}
+.goal-other-wrap input:focus{border-color:var(--orange)}
+
+/* ── RICH TEXT EDITOR ── */
+.rte-wrap{border:1px solid var(--border);border-radius:6px;overflow:hidden;background:var(--white)}
+.rte-wrap:focus-within{border-color:var(--grey)}
+.rte-toolbar{display:flex;align-items:center;gap:2px;padding:6px 8px;
+  background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.rte-btn{width:28px;height:28px;border-radius:4px;border:1px solid transparent;
+  background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:var(--dark);transition:all 0.1s;flex-shrink:0}
+.rte-btn:hover{background:var(--white);border-color:var(--border);color:var(--dark)}
+.rte-btn.active{background:var(--dark);color:#fff;border-color:var(--dark)}
+.rte-btn[title]{position:relative}
+.rte-sep{width:1px;height:18px;background:var(--border);margin:0 4px}
+.rte-label{font-size:10px;font-weight:700;color:var(--grey-l);letter-spacing:0.06em;
+  text-transform:uppercase;padding:0 4px}
+.rte-editor{min-height:120px;max-height:260px;overflow-y:auto;padding:10px 12px;
+  font-size:13px;line-height:1.65;color:var(--dark);outline:none}
+.rte-editor:empty:before{content:attr(data-placeholder);color:var(--grey-l);pointer-events:none}
+/* Rendered content styles — match these in index.html */
+.rte-editor h3,.rte-rendered h3{font-size:14px;font-weight:700;color:var(--dark);margin:10px 0 4px}
+.rte-editor h3:first-child,.rte-rendered h3:first-child{margin-top:0}
+.rte-editor ul,.rte-rendered ul{padding-left:18px;margin:4px 0}
+.rte-editor ol,.rte-rendered ol{padding-left:18px;margin:4px 0}
+.rte-editor li,.rte-rendered li{margin-bottom:3px}
+.rte-editor strong,.rte-rendered strong{font-weight:700}
+.rte-editor em,.rte-rendered em{font-style:italic}
+.rte-editor p,.rte-rendered p{margin-bottom:6px}
+.rte-editor p:last-child,.rte-rendered p:last-child{margin-bottom:0}
+.rte-editor a{color:var(--orange)}
+.rte-hint{font-size:10.5px;color:var(--grey-l);padding:5px 10px;
+  background:var(--surface);border-top:1px solid var(--border);display:flex;
+  align-items:center;gap:4px}
+
+/* ASSET UPLOAD */
+.upload-zone{border:1.5px dashed var(--border);border-radius:6px;padding:14px;
+  text-align:center;cursor:pointer;transition:all 0.12s}
+.upload-zone:hover{border-color:var(--orange);background:var(--orange-w)}
+.upload-zone-text{font-size:12px;color:var(--grey)}
+.upload-zone-text strong{color:var(--orange)}
+
+/* MONTH PILLS */
+.month-pills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px}
+.month-pill{padding:4px 12px;border-radius:20px;font-size:11.5px;font-weight:600;
+  cursor:pointer;border:1.5px solid var(--border);color:var(--grey);transition:all 0.1s;user-select:none}
+.month-pill:hover{border-color:var(--grey-l);color:var(--dark)}
+.month-pill.active{background:var(--dark);color:#fff;border-color:var(--dark)}
+.month-pill.has-events{border-color:var(--orange-pl);color:var(--dark)}
+.month-pill.active.has-events{background:var(--orange);border-color:var(--orange)}
+
+/* NOTICE */
+.notice{background:var(--orange-w);border:1px solid var(--orange-pl);border-radius:6px;
+  padding:10px 14px;font-size:12.5px;color:var(--dark);margin-bottom:16px;
+  display:flex;align-items:flex-start;gap:8px}
+.notice-icon{flex-shrink:0;margin-top:1px}
+
+/* DETAIL PANEL */
+.detail-panel{background:var(--white);border:1px solid var(--border);border-radius:8px;
+  padding:20px;margin-top:12px}
+.detail-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.detail-title{font-size:15px;font-weight:700;color:var(--dark);margin-bottom:4px}
+.detail-meta{display:flex;gap:6px;flex-wrap:wrap}
+.detail-section{margin-bottom:12px}
+.detail-dlabel{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--grey-l);margin-bottom:4px}
+.detail-text{font-size:13px;color:var(--dark);line-height:1.6}
+/* Rich-text rendered content */
+.rte-rendered{font-size:13px;color:var(--grey);line-height:1.65}
+.goals-display{display:flex;flex-wrap:wrap;gap:4px}
+.goal-display-tag{font-size:10.5px;padding:2px 7px;border-radius:3px;
+  background:var(--surface);color:var(--grey);font-weight:600}
+.detail-actions{display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:60px 24px;color:var(--grey-l)}
+.empty-state-icon{font-size:36px;margin-bottom:12px;opacity:0.5}
+.empty-state strong{display:block;font-size:15px;color:var(--grey);margin-bottom:6px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--dark);color:#fff;
+  padding:12px 18px;border-radius:8px;font-size:13px;font-weight:500;
+  box-shadow:0 4px 16px rgba(0,0,0,0.18);z-index:999;
+  transform:translateY(10px);opacity:0;transition:all 0.18s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:#2d7a4f}
+.toast.error{background:var(--pink)}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <svg width="34" height="34" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
+      <circle cx="250" cy="250" r="230" fill="#525252"/>
+      <path d="M289.09,280.17c-1.67,0-3.53.15-5.33.28l-1.38.11,2.28-18.92h32.85V246.2H270l-5,48,1.76.88a52.67,52.67,0,0,1,14.74-2.06c13.05,0,20.54,5.66,20.54,15.54,0,9.42-6.67,15.27-17.4,15.27A26.8,26.8,0,0,1,266,316.64l-8.31,12.9c7.95,7.24,17.24,10.76,28.37,10.76,20.76,0,34.71-12.46,34.71-31C320.8,291.34,308.65,280.17,289.09,280.17Z" fill="#f0911e"/>
+      <path d="M333,276.32l11.29-6.16c.44-.28.91-.54,1.37-.79a15.07,15.07,0,0,0,1.65-1l1.93-1.37-.14,2.36c-.14,2.37-.29,4.82-.29,7.21v61.12h18.59V245H355.15l-29.23,18.25Z" fill="#f0911e"/>
+      <path d="M110.92,160h13.82v25.23h26.44V160h13.74v63.53H151.18V198H124.74v25.6H110.92Z" fill="#fff"/>
+      <path d="M176.39,191.81c0-19.25,13.73-33.08,33.54-33.08,20,0,33.64,13.83,33.64,33.08,0,18.78-13.65,33.07-33.64,33.07C190.12,224.88,176.39,210.59,176.39,191.81Zm53.07,0c0-11.77-7.38-20.65-19.53-20.65S190.5,180,190.5,191.81c0,11.49,7.38,20.65,19.43,20.65S229.46,203.3,229.46,191.81Z" fill="#fff"/>
+      <path d="M294.88,172.75h-17.2v50.82H264V172.75H246.76V160h48.12Z" fill="#fff"/>
+      <path d="M346,211.62v11.95H304.18V160h41v12H318v13.64h23.74v11.59H318v14.39Z" fill="#fff"/>
+      <path d="M357.28,160h13.83v50.83H396.8v12.7H357.28Z" fill="#fff"/>
+      <path d="M110.59,274.74c0-19.36,14-33.43,33.82-33.43a34.91,34.91,0,0,1,24.18,8.87l-6.9,9.83a24.23,24.23,0,0,0-16.81-6.14c-11.9,0-20,8.5-20,20.87,0,12,7.74,20.88,19.36,20.88a21.75,21.75,0,0,0,17.47-8l8.41,9.25a34,34,0,0,1-26.26,11.34C123.63,308.18,110.59,293.16,110.59,274.74Z" fill="#fff"/>
+      <path d="M175.89,274.74c0-19.46,13.88-33.43,33.91-33.43,20.21,0,34,14,34,33.43,0,19-13.79,33.44-34,33.44C189.77,308.18,175.89,293.73,175.89,274.74Zm53.65,0c0-11.9-7.46-20.87-19.74-20.87s-19.65,9-19.65,20.87c0,11.62,7.46,20.88,19.65,20.88S229.54,286.36,229.54,274.74Z" fill="#fff"/>
+      <rect x="115.75" y="324.73" width="122.73" height="13.86" fill="#fff"/>
+    </svg>
+    <div class="sidebar-label">Hotel Co 51</div>
+    <div class="sidebar-title">Activations Admin</div>
+    <div class="sidebar-badge">Admin Portal</div>
+  </div>
+  <span class="nav-section">Content</span>
+  <a class="nav-item active" onclick="showView('initiatives')"><span class="icon">&#9776;</span> All Initiatives</a>
+  <a class="nav-item" onclick="showView('months')"><span class="icon">&#9635;</span> By Month</a>
+  <a class="nav-item" onclick="showView('new')"><span class="icon">&#43;</span> New Initiative</a>
+  <span class="nav-section">Streams</span>
+  <a class="nav-item" onclick="filterSidebar('mkt')"><span class="icon" style="color:var(--orange)">&#9679;</span> Marketing</a>
+  <a class="nav-item" onclick="filterSidebar('sus')"><span class="icon" style="color:var(--green)">&#9679;</span> Sustainability</a>
+  <a class="nav-item" onclick="filterSidebar('pc')"><span class="icon" style="color:var(--blue)">&#9679;</span> People &amp; Culture</a>
+  <div class="sidebar-footer">
+    <a href="index.html" target="_blank">&#8599; View live calendar</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="page-title" id="page-title">All Initiatives</span>
+      <div class="breadcrumb"><span>2026</span> / <span id="breadcrumb-sub">All months</span></div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-ghost" onclick="showView('months')">&#9635; Month view</button>
+      <button class="btn btn-primary" onclick="openModal()">&#43; Add initiative</button>
+      <div class="avatar">CF</div>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Total initiatives</div><div class="stat-value" id="stat-total">0</div><div class="stat-sub">Across all months</div></div>
+      <div class="stat-card"><div class="stat-label"><span class="stat-dot" style="background:var(--orange)"></span>Marketing</div><div class="stat-value" id="stat-mkt">0</div><div class="stat-sub">Spark, Glow &amp; Flare</div></div>
+      <div class="stat-card"><div class="stat-label"><span class="stat-dot" style="background:var(--green)"></span>Sustainability</div><div class="stat-value" id="stat-sus">0</div><div class="stat-sub">ESG activations</div></div>
+      <div class="stat-card"><div class="stat-label"><span class="stat-dot" style="background:var(--blue)"></span>People &amp; Culture</div><div class="stat-value" id="stat-pc">0</div><div class="stat-sub">Colleague moments</div></div>
+    </div>
+
+    <!-- INITIATIVES VIEW -->
+    <div id="view-initiatives">
+      <div class="notice">
+        <span class="notice-icon">&#9432;</span>
+        <span>This is a <strong>preview</strong> of the admin interface. New initiatives you add are stored in your browser. In the full version, all changes sync live across the portfolio.</span>
+      </div>
+      <div class="month-pills" id="month-pills"></div>
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">&#128269;</span>
+          <input type="text" id="search-input" placeholder="Search initiatives…" oninput="filterTable()">
+        </div>
+        <select class="filter-select" id="filter-team" onchange="filterTable()">
+          <option value="">All streams</option>
+          <option value="mkt">Marketing</option>
+          <option value="sus">Sustainability</option>
+          <option value="pc">People &amp; Culture</option>
+        </select>
+        <select class="filter-select" id="filter-tier" onchange="filterTable()">
+          <option value="">All tiers</option>
+          <option value="spark">Spark</option>
+          <option value="glow">Glow</option>
+          <option value="flare">Flare</option>
+          <option value="none">No tier</option>
+        </select>
+        <div class="toolbar-right">
+          <div class="view-tabs">
+            <div class="view-tab active" onclick="setTableView('list',this)">List</div>
+            <div class="view-tab" onclick="setTableView('detail',this)">Detail</div>
+          </div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header">
+          <div>Initiative</div><div>Date</div><div>Stream</div>
+          <div>Tier</div><div>Audience</div><div>Status</div><div>Actions</div>
+        </div>
+        <div id="table-body"></div>
+      </div>
+      <div id="empty-state" class="empty-state" style="display:none">
+        <div class="empty-state-icon">&#128197;</div>
+        <strong>No initiatives found</strong>
+        <p>Try adjusting your filters or add a new initiative.</p>
+        <button class="btn btn-primary" style="margin:14px auto 0" onclick="openModal()">&#43; Add initiative</button>
+      </div>
+    </div>
+
+    <!-- MONTH GRID VIEW -->
+    <div id="view-months" style="display:none">
+      <div class="notice">
+        <span class="notice-icon">&#9888;</span>
+        <span>Months with <strong>no activations</strong> are highlighted — these are forward-planning opportunities. Click any month to view or add initiatives.</span>
+      </div>
+      <div class="month-grid" id="month-grid"></div>
+    </div>
+
+    <!-- NEW INITIATIVE VIEW -->
+    <div id="view-new" style="display:none">
+      <div style="max-width:680px">
+        <p style="font-size:13px;color:var(--grey);margin-bottom:20px">
+          Fill in the details below to add a new initiative. Required fields are marked <span style="color:var(--orange)">*</span>. 
+          New initiatives are saved locally in this preview — in the full version they publish directly to the live calendar.
+        </p>
+        <div id="inline-form"></div>
+        <div style="display:flex;gap:8px;margin-top:20px">
+          <button class="btn btn-secondary" onclick="showView('initiatives')">Cancel</button>
+          <button class="btn btn-secondary" onclick="saveForm('draft','inline')">Save as Draft</button>
+          <button class="btn btn-success" onclick="saveForm('published','inline')">&#10003; Publish to calendar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-title">Add new initiative</div>
+      <button class="modal-close" onclick="closeModal()">&#x2715;</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-secondary" onclick="saveForm('draft','modal')">Save as Draft</button>
+      <button class="btn btn-success" onclick="saveForm('published','modal')">&#10003; Publish</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+const MONTHS_FULL = ['January','February','March','April','May','June',
+  'July','August','September','October','November','December'];
+const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun',
+  'Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// All goals drawn from existing calendar events
+const GOALS_LIST = [
+  'Customer Engagement',
+  'Guest Satisfaction',
+  'F&B Revenue',
+  'F&B Upsell',
+  'ESG Awareness',
+  'Community Engagement',
+  'Social Media',
+  'Zero Waste',
+  'Colleague Engagement',
+  'Team Culture',
+  'Recognition',
+  'Colleague Wellbeing',
+  'DEI',
+  'Inclusion',
+  'Biodiversity',
+  'Local Economy',
+  'Creativity',
+  'Family Wellbeing',
+  'Retention',
+  'Community Relations',
+  'Guest Experience',
+];
+
+const BASE_EVENTS = [
+  {id:'mkt-mar-4-spark',date:'2026-03-04',team:'mkt',tier:'spark',audience:'guests',title:'Colours of India \u2014 Spark: Holi Colour Welcome',summary:'Colourful bunting and dry-colour Holi welcome. Non-staining powders at arrival.',body:'<ul><li>Decorate the hotel in colourful bunting and pom-poms throughout the lobby and bar</li><li>Create a dry-colour Holi welcome station using natural, <strong>non-staining</strong> powders</li><li>Invite guests to take a pinch of colour on arrival with clear signage explaining Holi</li><li>Staff wear white aprons that slowly become colour-splashed through the evening</li></ul>',goals:['Customer Engagement','Guest Satisfaction'],status:'published'},
+  {id:'mkt-mar-4-glow',date:'2026-03-04',team:'mkt',tier:'glow',audience:'guests',title:'Colours of India \u2014 Glow: Tastes of India Menu',summary:'Thandai cocktails and Punjabi small plates at Bar Moxy.',body:'<ul><li>Offer Indian flavours at Bar Moxy: light bites, snacks, desserts</li><li>Thandai-inspired cocktails and Punjabi-inspired small plates</li><li>Labels on each dish explaining its origin \u2014 educational but never preachy</li></ul>',goals:['Customer Engagement','F&B Revenue'],status:'published'},
+  {id:'mkt-mar-5-spark',date:'2026-03-05',team:'mkt',tier:'spark',audience:'guests',title:'World Book Day \u2014 Spark: Book Swap',summary:'Take a book, leave a book. Second-hand books from local charity shops.',body:'<ul><li>Set up a dedicated book nook in a visible public area</li><li>Source second-hand books from local bookshops or charity shops</li><li>Simple \u201ctake a book, leave a book\u201d signage</li></ul>',goals:['Customer Engagement','Guest Satisfaction'],status:'published'},
+  {id:'mkt-mar-5-glow',date:'2026-03-05',team:'mkt',tier:'glow',audience:'guests',title:'World Book Day \u2014 Glow: Book Club Event',summary:'Partner with a local established book club for an evening at Bar Moxy.',body:'<ul><li>Work with a local established book club or create your own</li><li>See the local book club contacts in the activation notes for your city</li><li>Host the session at Bar Moxy \u2014 drives F&amp;B spend naturally</li></ul>',goals:['Customer Engagement','F&B Revenue'],status:'published'},
+  {id:'mkt-mar-5-flare',date:'2026-03-05',team:'mkt',tier:'flare',audience:'guests',title:'World Book Day \u2014 Flare: Local Author Reading',summary:'Invite a local author for a live reading. Non-ticketed, promoted on social.',body:'<ul><li>Identify a local author \u2014 contact via local bookshops, libraries, or writing groups</li><li>Non-ticketed event: open to hotel guests and walk-ins</li><li>Social media tags to promote in advance \u2014 Marketing will support</li><li>Great content opportunity: capture the reading for Reels/Stories</li></ul>',goals:['Customer Engagement','Guest Satisfaction','F&B Revenue','Social Media'],status:'published'},
+  {id:'mkt-mar-8-spark',date:'2026-03-08',team:'mkt',tier:'spark',audience:'guests',title:"IWD \u2014 Spark: Colouring Book at Check-In",summary:"'Top 50 Influential Women from History' colouring book given to every arriving guest.",body:'<ul><li>Re-order the \u201cTop 50 Influential Women from History\u201d colouring books</li><li>Offer one to every guest at check-in today</li><li>Simple, thoughtful gesture \u2014 no script needed beyond a warm handover</li></ul>',goals:['Customer Engagement','Guest Satisfaction'],status:'published'},
+  {id:'mkt-mar-8-flare',date:'2026-03-08',team:'mkt',tier:'flare',audience:'guests',title:"IWD \u2014 Flare: Women in Business Networking Panel",summary:'Local women business leaders panel. Non-ticketed, promoted on social.',body:'<ul><li>Identify 3\u20135 local women business leaders across different industries</li><li>Panel format: 45\u201360 mins of conversation, then open Q&amp;A</li><li>Non-ticketed \u2014 open invite through hotel social channels and Marketing</li><li>Capture content: short clips for Reels/Stories</li></ul>',goals:['Customer Engagement','F&B Revenue','Social Media','Community Engagement'],status:'published'},
+  {id:'mkt-mar-17-spark',date:'2026-03-17',team:'mkt',tier:'spark',audience:'guests',title:"St. Patrick\u2019s Day \u2014 Spark: Barry\u2019s Tea Welcome",summary:"Purchase Barry\u2019s Tea and invite guests to start St. Patrick\u2019s Day the truly Irish way.",body:'<ul><li>Purchase Barry\u2019s Tea (available in local supermarkets or via Amazon)</li><li>Print and display the St. Patrick\u2019s Day poster from the Toolkit at reception</li><li>Offer a cup to guests at check-in or during breakfast service</li><li>Simple, warm, culturally authentic \u2014 avoids green beer clich\u00e9s</li></ul>',goals:['Customer Engagement','Guest Satisfaction'],status:'published'},
+  {id:'mkt-mar-17-glow',date:'2026-03-17',team:'mkt',tier:'glow',audience:'guests',title:"St. Patrick\u2019s Day \u2014 Glow: Taste of Ireland Menu",summary:'Irish-themed cocktail menu avoiding clich\u00e9s. Recommended drinks list in toolkit.',body:'<ul><li>Design Irish-themed cocktails avoiding clich\u00e9s \u2014 see recommended list: Irish Maid, Emerald Mule, Irish Old Fashioned, Black Velvet, Whiskey Tonic, Hot Toddy</li><li>Download the menu template from the Toolkit and add your choices</li></ul>',goals:['Customer Engagement','F&B Revenue'],status:'published'},
+  {id:'mkt-mar-17-flare',date:'2026-03-17',team:'mkt',tier:'flare',audience:'guests',title:"St. Patrick\u2019s Day \u2014 Flare: Irish Songbook Live Music",summary:'GigPig acoustic musician playing Irish songs. Cocktail discounts alongside.',body:'<ul><li>Use GigPig to book an acoustic musician (solo or duo) to play Irish songs throughout the evening</li><li>Offer discounts on specially prepared Irish cocktails alongside the performance</li><li>Promote on social media in advance \u2014 Marketing to support</li></ul>',goals:['Customer Engagement','F&B Revenue','Social Media'],status:'published'},
+  {id:'pc-apr-1',date:'2026-04-01',team:'pc',tier:null,audience:'colleagues',title:"April Fool\u2019s Day",summary:'Pranks, themed dress-up, and shared laughs.',body:'<ul><li><strong>Decorate Staff Desks</strong> \u2014 sticky notes, paper cut-outs, balloons</li><li><strong>Pranked Themed Dress Code</strong> \u2014 mismatched clothing, funny hats, \u201cbackwards day\u201d</li><li><strong>Prank War</strong> \u2014 safe, consensual light prank exchange between departments</li></ul>',goals:['Colleague Engagement','Team Culture'],status:'published'},
+  {id:'sus-apr-3',date:'2026-04-03',team:'sus',tier:null,audience:'colleagues',title:'Walk to Work Day',summary:'Encourage active commuting and reduce transport emissions.',body:'<p>Encourage the team to walk, cycle, or use public transport. Post on Viva Engage and share photos. Consider setting up a \u201cgreen commute\u201d challenge board for the week.</p>',goals:['ESG Awareness','Colleague Wellbeing'],status:'published'},
+  {id:'mkt-apr-5-spark',date:'2026-04-05',team:'mkt',tier:'spark',audience:'guests',title:'Easter Sunday \u2014 Spark: Chocolate Egg on Arrival',summary:'Mini wrapped chocolate egg offered to every guest at check-in.',body:'<ul><li>Purchase mini wrapped chocolate eggs (bulk supermarket buy)</li><li>Include nut-free and dairy-free options</li><li>One per guest at check-in with a simple \u201cHappy Easter\u201d script</li></ul>',goals:['Customer Engagement','Guest Satisfaction'],status:'published'},
+  {id:'mkt-apr-5-glow',date:'2026-04-05',team:'mkt',tier:'glow',audience:'guests',title:'Easter Sunday \u2014 Glow: Colour-In & Puzzle Station',summary:'Easter colouring sheets and puzzles near breakfast. Guests leave art on display board.',body:'<ul><li>Print Easter colouring sheets / puzzles from the Toolkit</li><li>Place crayons and sheets near breakfast</li><li>Invite guests to leave completed drawings on a display board</li></ul>',goals:['Customer Engagement','Guest Satisfaction','Social Media'],status:'published'},
+  {id:'mkt-apr-5-flare',date:'2026-04-05',team:'mkt',tier:'flare',audience:'guests',title:'Easter Sunday \u2014 Flare: Local Easter Treat Pop-Up',summary:'Partner with a local bakery or chocolatier for a 2\u20133 hour Easter Sunday pop-up.',body:'<ul><li>Identify a local bakery or artisan chocolatier \u2014 contact 3\u20134 weeks in advance</li><li>Samples or small paid items (hotel takes no stock risk)</li><li>Marketing promotes as \u201cSupport Local This Easter\u201d and shares content</li></ul>',goals:['Community Engagement','Guest Satisfaction','Social Media'],status:'published'},
+  {id:'pc-apr-5',date:'2026-04-05',team:'pc',tier:null,audience:'colleagues',title:'Easter \u2014 Team Celebration',summary:'Egg hunt, chocolate tasting, Easter trivia, spring happy hour.',body:'<ul><li><strong>Easter Egg Hunt</strong> \u2014 hide eggs filled with treats around BOH areas</li><li><strong>Chocolate Tasting</strong> \u2014 milk, dark, truffle, white. Team votes for favourite.</li><li><strong>Easter Trivia or Bingo</strong> \u2014 quick team game in huddle</li><li><strong>Spring Drink Happy Hour</strong> \u2014 floral mocktails and lemonades</li></ul>',goals:['Colleague Engagement','Team Culture'],status:'published'},
+  {id:'mkt-apr-11-spark',date:'2026-04-11',team:'mkt',tier:'spark',audience:'guests',title:"National Pet Day \u2014 Spark: Sir Woofchester\u2019s Treats",summary:"Dog treat bowl at reception with \u2018Happy National Pet Day\u2019 sign from the Toolkit.",body:'<ul><li>Place the Sir Woofchester branded dog treat bowl prominently at reception</li><li>Print and display the \u201cHappy National Pet Day\u201d sign from the Toolkit</li><li>Offer a treat to any guest arriving with a dog</li></ul>',goals:['Customer Engagement','Guest Satisfaction'],status:'published'},
+  {id:'mkt-apr-11-glow',date:'2026-04-11',team:'mkt',tier:'glow',audience:'both',title:'National Pet Day \u2014 Glow: Local Charity Pet Walk',summary:'Dog walk from hotel with local animal charity. Coffee at Bar Moxy on return.',body:'<ul><li>Contact a local RSPCA branch, rescue centre, or animal charity</li><li>Casual dog walk (45\u201360 mins) from the hotel entrance</li><li>Coffee and soft drinks on return at Bar Moxy</li><li>Optional donation bucket and branded signage</li></ul>',goals:['Community Engagement','Guest Satisfaction','Social Media'],status:'published'},
+  {id:'pc-apr-15',date:'2026-04-15',team:'pc',tier:null,audience:'colleagues',title:'World Art Day',summary:'Art team building, themed dress-up, and a photography contest for colleagues.',body:'<ul><li><strong>Art-Based Team Building</strong> \u2014 collaborative mural or blindfolded art challenge</li><li><strong>Art Themed Dress Code</strong> \u2014 dress as a favourite artist, art movement, or painting</li><li><strong>Photography Contest</strong> \u2014 submit original art on a set theme. Team vote.</li></ul>',goals:['Colleague Engagement','Creativity'],status:'published'},
+  {id:'sus-apr-21',date:'2026-04-21',team:'sus',tier:null,audience:'both',title:'World Creativity & Innovation Day \u2014 Coffee to Compost',summary:'Launch the Coffee to Compost takeaway bags initiative.',body:'<ul><li>Buy sealable bags and fill with used, dried coffee grounds</li><li>Display by reception or bar with a \u201cPlease help yourselves\u201d sign</li><li>Print the activity template explaining how to use grounds in the garden</li></ul>',goals:['ESG Awareness','Zero Waste'],status:'published'},
+  {id:'mkt-apr-22-spark',date:'2026-04-22',team:'mkt',tier:'spark',audience:'guests',title:'Earth Day \u2014 Spark: Greener Stay Moment',summary:'Display the Greener Stay poster using current MESH data. Factual and proud \u2014 not preachy.',body:'<ul><li>Download the Greener Stay poster template from the Toolkit</li><li>Fill in your current hotel stats from MESH (energy, water, waste reduction)</li><li>Display at reception, in the lift lobby, or near breakfast</li></ul>',goals:['ESG Awareness','Guest Satisfaction'],status:'published'},
+  {id:'mkt-apr-22-glow',date:'2026-04-22',team:'mkt',tier:'glow',audience:'guests',title:'Earth Day \u2014 Glow: Plant-A-Seed Giveaway',summary:'Wildflower seed packets given to guests with a \u201cTake something green home\u201d message.',body:'<ul><li>Purchase wildflower seed packets or compostable seed pots</li><li>Display at reception: \u201cTake something green home.\u201d</li><li>Encourage guests to photograph and post once planted</li></ul>',goals:['Community Engagement','ESG Awareness','Social Media'],status:'published'},
+  {id:'mkt-apr-22-flare',date:'2026-04-22',team:'mkt',tier:'flare',audience:'both',title:'Earth Day \u2014 Flare: Clean Our Patch',summary:'Community litter-pick walk from the hotel. Finish with coffee at Bar Moxy.',body:'<ul><li>Partner with local council, BID, or environmental group</li><li>Short litter-pick route starting from the hotel (45\u201360 mins)</li><li>Finish with complimentary coffee at Bar Moxy. Capture content.</li></ul>',goals:['Community Engagement','ESG Awareness','Social Media'],status:'published'},
+  {id:'sus-apr-22',date:'2026-04-22',team:'sus',tier:null,audience:'both',title:'Earth Day \u2014 Volunteering',summary:'Team volunteering session at a local charity, garden, or clean-up event.',body:'<ul><li>Team activity or allow individuals to donate time to personal causes</li><li>Options: animal shelter, food bank, care home, community garden</li><li>Ask attendees to sign the liability waiver. Record in man-hours for ESG tracker.</li></ul>',goals:['Community Engagement','ESG Awareness'],status:'published'},
+  {id:'pc-apr-22',date:'2026-04-22',team:'pc',tier:null,audience:'colleagues',title:'Earth Day \u2014 Eco Colleague Challenge',summary:'Eco-friendly workspace competition, sustainable gifts, and plant a pot.',body:'<ul><li><strong>Sustainable Gift Giving</strong> \u2014 eco-friendly giveaways: reusable bags, bamboo cutlery, seed cards</li><li><strong>Recycling Competition</strong> \u2014 who reduces waste most? Incentivise creative strategies.</li><li><strong>Plant A Pot</strong> \u2014 small succulent or seed for each colleague</li></ul>',goals:['ESG Awareness','Colleague Engagement'],status:'published'},
+  {id:'sus-apr-23',date:'2026-04-23',team:'sus',tier:null,audience:'both',title:'World Book Day (Europe) \u2014 Book Swap Library',summary:'Community book exchange. Swap for free or donate, with proceeds to a local charity.',body:'<ul><li>Dedicated bookshelf or table in a public area with \u201cHelp yourself\u201d signage</li><li>Choose a local charity \u2014 source a donation tin</li><li>Consider making this a permanent feature</li></ul>',goals:['Community Engagement','Guest Satisfaction'],status:'published'},
+  {id:'pc-apr-25',date:'2026-04-25',team:'pc',tier:null,audience:'colleagues',title:'World Penguin Day',summary:'Dress in black and white, waddle race, and collect for a wildlife charity.',body:'<ul><li><strong>\u201cDress Like a Penguin\u201d Day</strong> \u2014 black-and-white outfits within uniform policy. Prize for \u201cBest Penguin Look\u201d.</li><li><strong>\u201cWaddle to Win\u201d</strong> \u2014 1-minute waddle race in a safe BOH space. Film for internal comms.</li><li><strong>Charity Collection</strong> \u2014 voluntary donation for a wildlife charity (e.g. WWF)</li></ul>',goals:['Colleague Engagement','Team Culture','ESG Awareness'],status:'published'},
+  {id:'pc-apr-29',date:'2026-04-29',team:'pc',tier:null,audience:'colleagues',title:'International Dance Day',summary:'Group dance session, dance-off tournament, or dance yoga for the team.',body:'<ul><li><strong>Group Dance Session</strong> \u2014 video tutorial: line dance, salsa, or a simple twist session</li><li><strong>Dance-Off Tournament</strong> \u2014 teams, different music genres, winner gets bragging rights</li><li><strong>Dance Yoga / Stretching</strong> \u2014 fusion with ballet or modern dance movements</li></ul>',goals:['Colleague Engagement','Team Culture'],status:'published'},
+  {id:'sus-apr-29',date:'2026-04-29',team:'sus',tier:null,audience:'both',title:'Stop Food Waste Day \u2014 Coffee to Compost',summary:'Reinforce Coffee to Compost and zero-waste habits. Track and report.',body:'<ul><li>Ensure bags are prominently displayed today</li><li>Add a \u201cStop Food Waste Day\u201d card alongside</li><li>Track and record food waste reduction this week. Share on Viva Engage.</li></ul>',goals:['ESG Awareness','Zero Waste'],status:'published'},
+  {id:'pc-may-1',date:'2026-05-01',team:'pc',tier:null,audience:'colleagues',title:"May Day / International Workers\u2019 Day",summary:'Appreciation cards, award ceremony, and a wellness event.',body:'<ul><li><strong>Appreciation Cards</strong> \u2014 handwritten notes from manager to every team member</li><li><strong>Employee Award Ceremony</strong> \u2014 Team Player, Innovator, Customer Service Excellence, Leadership</li><li><strong>Wellness Event</strong> \u2014 yoga, healthy breakfast buffet, or a fitness challenge</li></ul>',goals:['Colleague Engagement','Recognition','Team Culture'],status:'published'},
+  {id:'mkt-may-3-spark',date:'2026-05-03',team:'mkt',tier:'spark',audience:'guests',title:'World Laughter Day \u2014 Spark: Bad Joke at Check-In',summary:"Print 10 terrible jokes. Crew delivers one per guest. 'We apologise in advance.' sign at desk.",body:'<ul><li>Print 10 terrible (genuinely terrible) jokes from the Toolkit</li><li>Crew to deliver one to each arriving guest at check-in</li><li>Small sign at desk: \u201cIt\u2019s World Laughter Day. We apologise in advance.\u201d</li></ul>',goals:['Customer Engagement','Guest Satisfaction'],status:'published'},
+  {id:'mkt-may-3-glow',date:'2026-05-03',team:'mkt',tier:'glow',audience:'guests',title:'World Laughter Day \u2014 Glow: Laugh & Win Board',summary:'Guests write their best joke on a board. Staff vote winner. Free cocktail at 8pm.',body:'<ul><li>Set up a whiteboard with \u201cWrite your best joke here\u201d prompt</li><li>Staff vote through the day for the funniest entry</li><li>Announce winner at 8pm \u2014 a free cocktail or dessert from Bar Moxy</li></ul>',goals:['Customer Engagement','F&B Revenue'],status:'published'},
+  {id:'mkt-may-3-flare',date:'2026-05-03',team:'mkt',tier:'flare',audience:'both',title:'World Laughter Day \u2014 Flare: Comedy Open Mic Night',summary:'Local comedy group or amateur 5-minute sets. Promote externally 2 weeks in advance.',body:'<ul><li>Partner with a local comedy group or recruit amateur comedians via social media</li><li>5-minute sets, open format \u2014 no booking required for the audience</li><li>Promote externally through Marketing at least 2 weeks in advance</li></ul>',goals:['Community Engagement','F&B Revenue','Social Media'],status:'published'},
+  {id:'sus-may-5',date:'2026-05-05',team:'sus',tier:null,audience:'both',title:'Compost Awareness Week (3\u20139 May)',summary:'Refresh Coffee to Compost display. Count bags given out since launch.',body:'<ul><li>Refresh the Coffee to Compost display at bar/reception</li><li>Count and record bags given out since launch</li><li>Post a \u201cweek in numbers\u201d update on Viva Engage</li></ul>',goals:['ESG Awareness','Zero Waste'],status:'published'},
+  {id:'sus-may-10',date:'2026-05-10',team:'sus',tier:null,audience:'both',title:'World Fairtrade Day \u2014 Local Partnerships',summary:'Collaborate with a sustainable local supplier to showcase their products at the hotel.',body:'<ul><li>Check the F&amp;B menu and identify items to swap for a local/sustainable version</li><li>Liaise with local supplier(s) \u2014 seasonal produce, local roasters, craft drinks</li><li>Discuss combined comms: cross-promotion and shared social content</li></ul>',goals:['Community Engagement','ESG Awareness','Local Economy'],status:'published'},
+  {id:'sus-may-11',date:'2026-05-11',team:'sus',tier:null,audience:'colleagues',title:'Mental Health Awareness Week (11\u201317 May)',summary:'Random Acts of Kindness board. Check in on colleague wellbeing all week.',body:'<ul><li>Set up a Random Acts of Kindness board in the staff area for the week</li><li>Invite colleagues to share small acts of kindness given or received</li><li>Share best stories on Viva Engage (with permission)</li></ul>',goals:['Colleague Wellbeing','ESG Awareness'],status:'published'},
+  {id:'pc-may-13',date:'2026-05-13',team:'pc',tier:null,audience:'both',title:'World Cocktail Day',summary:'Mocktail competition, tasting menu, and interactive cocktail wall at Bar Moxy.',body:'<ul><li><strong>Tasting Menu</strong> \u2014 cocktails and mocktails from different regions/eras at Bar Moxy</li><li><strong>Mocktail Competition</strong> \u2014 colleagues create their own. Categories: creativity, flavour, presentation.</li><li><strong>Interactive Cocktail Wall</strong> \u2014 spirits, mixers, and garnishes. Guests build their own drink.</li></ul>',goals:['Guest Satisfaction','F&B Revenue','Colleague Engagement'],status:'published'},
+  {id:'mkt-may-15-spark',date:'2026-05-15',team:'mkt',tier:'spark',audience:'guests',title:'National Pizza Day \u2014 Spark: Free Slice Hour',summary:'Complimentary mini slices from 5pm until stock runs out.',body:'<ul><li>Offer mini slices from 5pm \u2014 until stock runs out (limited quantity = urgency)</li><li>Print and display the Pizza Day poster from the Toolkit</li><li><strong>NB:</strong> Use in-house printable version only \u2014 do <strong>not</strong> print the professional PDF in-house.</li></ul>',goals:['Customer Engagement','F&B Upsell'],status:'published'},
+  {id:'mkt-may-15-glow',date:'2026-05-15',team:'mkt',tier:'glow',audience:'guests',title:'National Pizza Day \u2014 Glow: Build Your Own Special',summary:'Guests choose 3 toppings from a set list. One-day-only menu insert from the Toolkit.',body:'<ul><li>Guests choose exactly 3 toppings from a curated set list</li><li>Print the one-day-only menu insert from the Toolkit</li><li>Creates scarcity and decision-making fun \u2014 drives engagement at the bar</li></ul>',goals:['F&B Revenue','Guest Satisfaction'],status:'published'},
+  {id:'mkt-may-15-flare',date:'2026-05-15',team:'mkt',tier:'flare',audience:'both',title:'National Pizza Day \u2014 Flare: Pizza & DJ Night',summary:'Local DJ, pizza + drink bundle deal. Work with Marketing for an Eventbrite booking link.',body:'<ul><li>Book a local DJ for the evening</li><li>Bundle deal: Pizza + drink at a set price. Encourage group bookings.</li><li>Work with Marketing to set up an Eventbrite booking link</li></ul>',goals:['Community Engagement','F&B Revenue','Social Media'],status:'published'},
+  {id:'pc-may-15',date:'2026-05-15',team:'pc',tier:null,audience:'colleagues',title:'International Family Day',summary:'Bring your family to work day, team picnic or barbecue, team photo session.',body:'<ul><li><strong>Bring Your Family to Work</strong> \u2014 employees show families where they work</li><li><strong>Picnic or Barbecue</strong> \u2014 bring everyone together over great food outside the property</li><li><strong>Photo Session</strong> \u2014 capture team memories for display</li></ul>',goals:['Colleague Engagement','Family Wellbeing'],status:'published'},
+  {id:'sus-may-15',date:'2026-05-15',team:'sus',tier:null,audience:'both',title:'Endangered Species Day',summary:'Display threatened wildlife facts in guest areas. Link to a local wildlife charity.',body:'<p>Place a small display in the lobby or lift with facts about an endangered species relevant to your hotel\u2019s region. Include a QR code to a wildlife charity. Tie into Local Partnerships by contacting a local wildlife organisation.</p>',goals:['ESG Awareness','Community Engagement'],status:'published'},
+  {id:'mkt-may-16-spark',date:'2026-05-16',team:'mkt',tier:'spark',audience:'guests',title:'Eurovision Final \u2014 Spark: Eurovision Bingo',summary:'Bingo cards from toolkit for guests watching in Bar Moxy. Prize for first line and full house.',body:'<ul><li>Print and shuffle Eurovision Bingo cards from the Toolkit</li><li>Hand out to guests watching in Bar Moxy</li><li>Crew encourage playfulness \u2014 check in on guests\u2019 bingo progress</li><li>Prize for first line, and a bigger prize for full house</li></ul>',goals:['Customer Engagement','F&B Upsell','Guest Satisfaction'],status:'published'},
+  {id:'mkt-may-16-flare',date:'2026-05-16',team:'mkt',tier:'flare',audience:'both',title:'Eurovision Final \u2014 Flare: Eurovision Watch Party',summary:'Themed outfits, overnight stay prize for Best Dressed Nation. Promoted via Eventbrite.',body:'<ul><li>Encourage themed outfits \u2014 flag accessories, glam outfits, national dress</li><li>Overnight stay prize for \u201cBest Dressed Nation\u201d (judged by Bar Moxy crew)</li><li>Promote externally as an open invite through Marketing and Eventbrite (free tickets)</li></ul>',goals:['Community Engagement','F&B Revenue','Social Media'],status:'published'},
+  {id:'pc-may-17',date:'2026-05-17',team:'pc',tier:null,audience:'colleagues',title:'Associate Appreciation Week (17\u201323 May)',summary:'A full week of recognition. Every colleague should feel seen and valued.',body:'<ul><li>Personal appreciation cards from GM and HODs to every team member</li><li>Daily themed surprises throughout the week</li><li>Shout-outs in daily huddle \u2014 one colleague recognised each shift</li></ul>',goals:['Colleague Engagement','Recognition','Retention'],status:'published'},
+  {id:'pc-may-20',date:'2026-05-20',team:'pc',tier:null,audience:'both',title:'World Bee Day',summary:'Build a bee hotel, honey tasting session, and a bee-friendly guest station.',body:'<ul><li><strong>Build a Bee Hotel</strong> \u2014 bamboo, wood, recycled materials. Display outdoors.</li><li><strong>Honey Tasting Workshop</strong> \u2014 different types of honey. Invite a local beekeeper to lead.</li><li><strong>Bee-Friendly Guest Station</strong> \u2014 lobby booth: bee facts, honey lemonade, wildflower seeds</li></ul>',goals:['ESG Awareness','Community Engagement'],status:'published'},
+  {id:'sus-may-20',date:'2026-05-20',team:'sus',tier:null,audience:'both',title:'World Bee Day \u2014 Sustainability',summary:'Plant bee-friendly flowers in any outdoor space. Feature a local honey supplier.',body:'<p>Plant bee-friendly flowers or herbs (lavender, borage, marigolds). Display a pollinator fact card for guests. Consider featuring a local honey supplier through the Local Partnerships initiative.</p>',goals:['ESG Awareness','Biodiversity'],status:'published'},
+  {id:'mkt-may-21-spark',date:'2026-05-21',team:'mkt',tier:'spark',audience:'guests',title:'Cultural Diversity Day \u2014 Spark: Hello in 10 Languages',summary:"'Hello in 10 Languages' poster at front desk. Crew greet guests in international languages.",body:'<ul><li>Print and display the welcome poster at front desk (available in Toolkit)</li><li>Encourage crew to learn one international greeting and use it with guests today</li><li>Simple, warm, low-effort \u2014 shows genuine welcome to all guests</li></ul>',goals:['Customer Engagement','Guest Satisfaction'],status:'published'},
+  {id:'mkt-may-21-glow',date:'2026-05-21',team:'mkt',tier:'glow',audience:'both',title:'Cultural Diversity Day \u2014 Glow: Culture & Cocktails Night',summary:'Local international group playlist takeover. Themed drinks.',body:'<ul><li>Collaborate with a local international student group or cultural society</li><li>Music playlist takeover \u2014 genres from around the world</li><li>Themed cocktails and drinks from different cultures</li></ul>',goals:['Community Engagement','Social Media','F&B Revenue'],status:'published'},
+  {id:'pc-may-21',date:'2026-05-21',team:'pc',tier:null,audience:'both',title:'World Day for Cultural Diversity',summary:'Interactive world map, cultural trivia, diversity wall, and a cultural food festival.',body:'<ul><li><strong>Interactive World Map</strong> \u2014 mark countries of origin and places that had an impact</li><li><strong>Cultural Trivia</strong> \u2014 questions on countries, languages, customs. Teams compete for prizes.</li><li><strong>Cultural Diversity Wall</strong> \u2014 staff share facts, quotes, pictures from their cultures</li><li><strong>Cultural Food Festival</strong> \u2014 colleagues bring dishes from their heritage</li></ul>',goals:['Colleague Engagement','DEI','Inclusion'],status:'published'},
+  {id:'sus-may-22',date:'2026-05-22',team:'sus',tier:null,audience:'both',title:'World Biodiversity Day',summary:'Connect to active sustainability initiative. Clothes donation drive final push.',body:'<p>Connect today to any active sustainability initiative. If running the Clothes Donation Drive, push for final contributions. If running Local Partnerships, feature a supplier with strong environmental credentials.</p>',goals:['ESG Awareness','Community Engagement'],status:'published'},
+  {id:'pc-june-pride',date:'2026-06-01',team:'pc',tier:null,audience:'both',title:'Pride Month \u2014 June',summary:'A month of inclusion, visibility, and celebration. Activations throughout June.',body:'<ul><li><strong>Pride Huddle Opener</strong> \u2014 5\u201310 min opener every shift. Manager shares one inclusive behaviour example.</li><li><strong>HC51 Pride Trivia</strong> \u2014 team quiz with prizes. Details to follow.</li><li><strong>Rainbow Hydration Station</strong> \u2014 fruit-infused water with colourful labels</li><li><strong>Pride Bingo</strong> \u2014 \u201cHelped a colleague\u201d / \u201cGave a compliment\u201d / \u201cShared a smile.\u201d Complete 3 for a treat.</li><li><strong>Decorate Together</strong> \u2014 Pride-festive property as a team creative activity</li></ul>',goals:['Colleague Engagement','Inclusion','DEI','Guest Experience'],status:'published'},
+  {id:'pc-jun-1',date:'2026-06-01',team:'pc',tier:null,audience:'both',title:'Global Day of Parents',summary:'Parent appreciation packages, a Thank You wall in the lobby, and a Memory Lane display.',body:'<ul><li><strong>Parent Appreciation Gift Packages</strong> \u2014 spa voucher, wine, personalised local gift</li><li><strong>\u201cThank You, Parents\u201d Wall</strong> \u2014 pinboard or digital display in the lobby</li><li><strong>Memory Lane Walk</strong> \u2014 framed parenting moments and quotes through hotel corridors</li></ul>',goals:['Guest Satisfaction','Community Engagement'],status:'published'},
+  {id:'pc-jun-8',date:'2026-06-08',team:'pc',tier:null,audience:'both',title:'World Oceans Day',summary:'Ocean photography workshop, sustainable seafood dinner, collaborative mural, eco swag bags.',body:'<ul><li><strong>Ocean Photography Workshop</strong> \u2014 capturing marine landscapes; photography for conservation</li><li><strong>Sustainable Seafood Dinner or Buffet</strong> \u2014 sustainably sourced or plant-based ocean-inspired dishes</li><li><strong>Collaborative Ocean Mural</strong> \u2014 blank wall in break room, all staff contribute</li><li><strong>Eco Swag Bags</strong> \u2014 bamboo straws, reusable bottles, eco notebooks</li></ul>',goals:['ESG Awareness','Colleague Engagement','Guest Experience'],status:'published'},
+  {id:'sus-jun-8',date:'2026-06-08',team:'sus',tier:null,audience:'both',title:'World Oceans Day \u2014 Sustainability',summary:'Highlight the Ocean Bottle partnership. Remove single-use plastics from bar and F&B.',body:'<ul><li>Highlight the hotel\u2019s Ocean Bottle partnership at bar and reception</li><li>Remove single-use plastics from breakfast and bar \u2014 substitute with alternatives</li><li>Display ocean plastic pollution facts in guest areas</li></ul>',goals:['ESG Awareness','Zero Waste'],status:'published'},
+  {id:'pc-jun-14',date:'2026-06-14',team:'pc',tier:null,audience:'both',title:'Global Wellness Day',summary:'Morning yoga, wellness walk, massage stations, and a mental health awareness talk.',body:'<ul><li><strong>Morning Yoga</strong> \u2014 group session outdoors or in a quiet indoor space</li><li><strong>Wellness Stations</strong> \u2014 short massage sessions. Staff sign up for a mini wellness break.</li><li><strong>Wellness Walk</strong> \u2014 mindfulness walk near the hotel</li><li><strong>Mental Health Awareness Talk</strong> \u2014 professional Q&amp;A on stress management and support</li></ul>',goals:['Colleague Wellbeing','ESG Awareness','Guest Experience'],status:'published'},
+  {id:'pc-jun-18',date:'2026-06-18',team:'pc',tier:null,audience:'colleagues',title:'International Picnic Day',summary:'Themed picnic lunch, outdoor team building, bingo or trivia, and a photo contest.',body:'<ul><li><strong>Themed Picnic Lunch</strong> \u2014 picnic baskets or make-your-own sandwich station</li><li><strong>Outdoor Team Building</strong> \u2014 three-legged race, frisbee, scavenger hunt</li><li><strong>Photo Contest</strong> \u2014 most creative photo wins</li></ul>',goals:['Colleague Engagement','Team Culture'],status:'published'},
+  {id:'pc-jun-20',date:'2026-06-20',team:'pc',tier:null,audience:'both',title:'Summer Solstice',summary:'Sunshine dress code, sunset cocktail hour, photoshoot, and a cake decorating contest.',body:'<ul><li><strong>\u201cSunshine\u201d Dress Code</strong> \u2014 bright summery colours. Small prize for best \u201csunny\u201d outfit.</li><li><strong>Sunset Cocktail Hour</strong> \u2014 outdoor bar with sun-themed drinks: citrus cocktails, lemonades</li><li><strong>Sunshine Cake Decorating</strong> \u2014 cupcake contest with sun-themed icing and edible flowers</li></ul>',goals:['Colleague Engagement','Social Media'],status:'published'},
+];
+
+let LOCAL_EVENTS = [];
+try { LOCAL_EVENTS = JSON.parse(localStorage.getItem('hc51_admin_v2')||'[]'); } catch(e){}
+function getAllEvents(){ return [...BASE_EVENTS,...LOCAL_EVENTS]; }
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let currentView='initiatives', activeMonth=null, activeTeamFilter='', editingId=null, tableView='list';
+let selectedGoals=[], otherGoalText='';
+let CURRENT_RTE_ID = null; // tracks active RTE element
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function teamLabel(t){return{mkt:'Marketing',sus:'Sustainability',pc:'People & Culture'}[t]||t;}
+function fmtDate(ds){return new Date(ds+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+function getMonth(ds){return parseInt(ds.split('-')[1]);}
+function eventsForMonth(m){return getAllEvents().filter(e=>getMonth(e.date)===m);}
+function teamChip(t){return`<span class="chip chip-${t}"><span class="chip-dot"></span>${teamLabel(t)}</span>`;}
+function tierBadge(tier){if(!tier)return`<span class="tier-badge tier-none">\u2014</span>`;return`<span class="tier-badge tier-${tier}">${tier.charAt(0).toUpperCase()+tier.slice(1)}</span>`;}
+function statusBadge(s){return s==='published'?`<span class="status-badge status-published">&#10003; Published</span>`:`<span class="status-badge status-draft">&#9679; Draft</span>`;}
+function audLabel(a){return{guests:'&#128101; Guests',colleagues:'&#127968; Colleagues',both:'&#127760; Both'}[a]||a;}
+function genId(){return 'local-'+Date.now()+'-'+Math.random().toString(36).substr(2,5);}
+function saveLocal(){localStorage.setItem('hc51_admin_v2',JSON.stringify(LOCAL_EVENTS));}
+
+function updateStats(){
+  const e=getAllEvents();
+  document.getElementById('stat-total').textContent=e.length;
+  document.getElementById('stat-mkt').textContent=e.filter(x=>x.team==='mkt').length;
+  document.getElementById('stat-sus').textContent=e.filter(x=>x.team==='sus').length;
+  document.getElementById('stat-pc').textContent=e.filter(x=>x.team==='pc').length;
+}
+
+// ─── VIEWS ───────────────────────────────────────────────────────────────────
+function showView(v){
+  currentView=v;
+  ['initiatives','months','new'].forEach(id=>{
+    document.getElementById('view-'+id).style.display=id===v?'block':'none';
+  });
+  if(v==='initiatives'){
+    document.getElementById('page-title').textContent='All Initiatives';
+    renderMonthPills(); renderTable();
+  } else if(v==='months'){
+    document.getElementById('page-title').textContent='Month Overview';
+    renderMonthGrid();
+  } else if(v==='new'){
+    document.getElementById('page-title').textContent='New Initiative';
+    editingId=null;
+    document.getElementById('inline-form').innerHTML=buildForm(null,'inline');
+    initRTE('inline');
+  }
+  updateStats();
+}
+
+function filterSidebar(t){activeTeamFilter=t;document.getElementById('filter-team').value=t;showView('initiatives');}
+
+// ─── MONTH PILLS ─────────────────────────────────────────────────────────────
+function renderMonthPills(){
+  const evts=getAllEvents();
+  let h=`<span class="month-pill${activeMonth===null?' active':''}" onclick="setMonth(null)">All months</span>`;
+  ([1,2,3,4,5,6,7,8,9,10,11,12]).forEach(m=>{
+    const cnt=evts.filter(e=>getMonth(e.date)===m).length;
+    const hc=cnt>0?' has-events':'';
+    const ac=activeMonth===m?' active':'';
+    h+=`<span class="month-pill${hc}${ac}" onclick="setMonth(${m})">${MONTHS_SHORT[m-1]}${cnt>0?` <span style="opacity:0.55;font-size:10px">(${cnt})</span>`:''}</span>`;
+  });
+  document.getElementById('month-pills').innerHTML=h;
+}
+function setMonth(m){
+  activeMonth=m;
+  document.getElementById('breadcrumb-sub').textContent=m?MONTHS_FULL[m-1]:'All months';
+  renderMonthPills(); filterTable();
+}
+
+// ─── TABLE ───────────────────────────────────────────────────────────────────
+function setTableView(v,el){tableView=v;document.querySelectorAll('.view-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderTable();}
+
+function filterTable(){
+  activeTeamFilter=document.getElementById('filter-team').value;
+  const search=document.getElementById('search-input').value.toLowerCase();
+  const tier=document.getElementById('filter-tier').value;
+  let evts=getAllEvents();
+  if(activeMonth) evts=evts.filter(e=>getMonth(e.date)===activeMonth);
+  if(activeTeamFilter) evts=evts.filter(e=>e.team===activeTeamFilter);
+  if(tier==='none') evts=evts.filter(e=>!e.tier);
+  else if(tier) evts=evts.filter(e=>e.tier===tier);
+  if(search) evts=evts.filter(e=>e.title.toLowerCase().includes(search)||e.summary.toLowerCase().includes(search));
+  renderTable(evts);
+}
+
+function renderTable(evts){
+  if(!evts) evts=getFilteredEvents();
+  evts.sort((a,b)=>a.date.localeCompare(b.date));
+  const body=document.getElementById('table-body');
+  const empty=document.getElementById('empty-state');
+  if(!evts.length){body.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  if(tableView==='detail'){
+    body.innerHTML=evts.map(e=>`
+    <div class="detail-panel">
+      <div class="detail-head"><div>
+        <div class="detail-title">${e.title}</div>
+        <div class="detail-meta">${teamChip(e.team)}${tierBadge(e.tier)}<span style="font-size:11px;color:var(--grey)">${fmtDate(e.date)}</span>${statusBadge(e.status)}</div>
+      </div></div>
+      <div class="detail-section"><div class="detail-dlabel">Summary</div><div class="detail-text">${e.summary}</div></div>
+      ${e.body?`<div class="detail-section"><div class="detail-dlabel">Full details</div><div class="rte-rendered">${e.body}</div></div>`:''}
+      ${e.goals?.length?`<div class="detail-section"><div class="detail-dlabel">Goals</div><div class="goals-display">${e.goals.map(g=>`<span class="goal-display-tag">${g}</span>`).join('')}</div></div>`:''}
+      <div class="detail-actions">
+        <button class="btn btn-secondary" onclick="editEvent('${e.id}')">&#9998; Edit</button>
+        ${LOCAL_EVENTS.find(l=>l.id===e.id)?`<button class="btn btn-danger" onclick="deleteEvent('${e.id}')">&#128465; Delete</button>`:''}
+      </div>
+    </div>`).join('');
+    return;
+  }
+  body.innerHTML=evts.map(e=>`
+  <div class="table-row" onclick="editEvent('${e.id}')">
+    <div class="cell-title">${e.title}<div class="cell-sub">${e.summary.substring(0,68)}\u2026</div></div>
+    <div class="cell-date">${fmtDate(e.date)}<span class="month-badge">${MONTHS_SHORT[getMonth(e.date)-1]}</span></div>
+    <div>${teamChip(e.team)}</div>
+    <div>${tierBadge(e.tier)}</div>
+    <div style="font-size:11px;color:var(--grey)">${audLabel(e.audience)}</div>
+    <div>${statusBadge(e.status)}</div>
+    <div style="display:flex;gap:4px" onclick="event.stopPropagation()">
+      <button class="btn btn-ghost" style="padding:4px 8px;font-size:11px" onclick="editEvent('${e.id}')">Edit</button>
+      ${LOCAL_EVENTS.find(l=>l.id===e.id)?`<button class="btn btn-danger" style="padding:4px 8px;font-size:11px" onclick="deleteEvent('${e.id}')">&#128465;</button>`:''}
+    </div>
+  </div>`).join('');
+}
+
+function getFilteredEvents(){
+  let evts=getAllEvents();
+  if(activeMonth) evts=evts.filter(e=>getMonth(e.date)===activeMonth);
+  if(activeTeamFilter) evts=evts.filter(e=>e.team===activeTeamFilter);
+  return evts;
+}
+
+// ─── MONTH GRID ───────────────────────────────────────────────────────────────
+function renderMonthGrid(){
+  document.getElementById('month-grid').innerHTML=([1,2,3,4,5,6,7,8,9,10,11,12]).map(m=>{
+    const ev=eventsForMonth(m);
+    const mkt=ev.filter(e=>e.team==='mkt').length;
+    const sus=ev.filter(e=>e.team==='sus').length;
+    const pc=ev.filter(e=>e.team==='pc').length;
+    const tot=ev.length;
+    const mx=Math.max(mkt,sus,pc,1);
+    const empty=tot===0;
+    return `<div class="month-card" onclick="jumpToMonth(${m})">
+      <div class="month-card-head" style="${empty?'background:var(--orange-w)':''}">
+        <div><div class="month-name">${MONTHS_FULL[m-1]}</div><div class="month-year">2026</div></div>
+        <div><div class="month-count">${tot}</div><div style="font-size:9px;color:var(--grey-l);text-align:right">${tot===1?'initiative':'initiatives'}</div></div>
+      </div>
+      ${empty?`<div class="month-empty"><div class="month-empty-icon">&#128197;</div><div class="month-empty-text">No activations planned yet</div></div>`:`
+      <div class="month-card-body">
+        ${['mkt','sus','pc'].map((t,i)=>{const c=[mkt,sus,pc][i];return`<div class="month-bar-row"><span class="month-bar-label">${t.toUpperCase()}</span><div class="month-bar-track"><div class="month-bar-fill ${t}" style="width:${Math.round(c/mx*100)}%"></div></div><span class="month-bar-num">${c}</span></div>`;}).join('')}
+      </div>`}
+      <button class="month-add-btn" onclick="event.stopPropagation();quickAdd(${m})">+ ${empty?'Add first activation':'Add initiative'}</button>
+    </div>`;
+  }).join('');
+}
+
+function jumpToMonth(m){activeMonth=m;document.getElementById('breadcrumb-sub').textContent=MONTHS_FULL[m-1];showView('initiatives');setMonth(m);}
+function quickAdd(m){openModal();setTimeout(()=>{const d=document.getElementById('f-date');if(d)d.value=`2026-${String(m).padStart(2,'0')}-01`;},80);}
+
+// ─── GOALS CHECKBOXES ─────────────────────────────────────────────────────────
+function buildGoalsPicker(existing){
+  let h='<div class="goals-grid" id="goals-grid">';
+  GOALS_LIST.forEach(g=>{
+    const chk=existing.includes(g);
+    h+=`<label class="goal-check-item${chk?' checked':''}" id="gcl-${CSS.escape(g)}">
+      <input type="checkbox" value="${g}"${chk?' checked':''} onchange="syncGoalItem(this)">
+      <span class="goal-check-label">${g}</span>
+    </label>`;
+  });
+  // Other checkbox
+  const otherVal = existing.filter(g=>!GOALS_LIST.includes(g)).join(', ');
+  h+=`<label class="goal-check-item${otherVal?' checked':''}" id="gcl-other">
+    <input type="checkbox" id="goal-other-chk"${otherVal?' checked':''} onchange="toggleOtherGoal(this)">
+    <span class="goal-check-label">Other\u2026</span>
+  </label>`;
+  h+='</div>';
+  h+=`<div class="goal-other-wrap${otherVal?' visible':''}" id="goal-other-wrap">
+    <span style="font-size:12px;color:var(--grey);white-space:nowrap">Other goal:</span>
+    <input type="text" id="goal-other-text" placeholder="Describe the goal\u2026" value="${otherVal}">
+  </div>`;
+  return h;
+}
+
+function syncGoalItem(chk){
+  const label=chk.closest('.goal-check-item');
+  label.classList.toggle('checked', chk.checked);
+}
+
+function toggleOtherGoal(chk){
+  const label=chk.closest('.goal-check-item');
+  const wrap=document.getElementById('goal-other-wrap');
+  label.classList.toggle('checked', chk.checked);
+  wrap.classList.toggle('visible', chk.checked);
+  if(chk.checked) document.getElementById('goal-other-text')?.focus();
+}
+
+function collectGoals(){
+  const goals=[];
+  document.querySelectorAll('.goals-grid input[type=checkbox]:not(#goal-other-chk):checked').forEach(c=>goals.push(c.value));
+  const otherChk=document.getElementById('goal-other-chk');
+  if(otherChk?.checked){
+    const txt=document.getElementById('goal-other-text')?.value?.trim();
+    if(txt) txt.split(',').map(s=>s.trim()).filter(Boolean).forEach(s=>goals.push(s));
+  }
+  return goals;
+}
+
+// ─── RICH TEXT EDITOR ─────────────────────────────────────────────────────────
+function buildRTE(existingHtml, rteId){
+  CURRENT_RTE_ID = rteId;
+  return `<div class="rte-wrap">
+  <div class="rte-toolbar">
+    <span class="rte-label">Format</span>
+    <div class="rte-sep"></div>
+    <button type="button" class="rte-btn" title="Bold" onclick="rteCmd('bold','${rteId}')"><strong>B</strong></button>
+    <button type="button" class="rte-btn" title="Italic" onclick="rteCmd('italic','${rteId}')"><em>I</em></button>
+    <div class="rte-sep"></div>
+    <button type="button" class="rte-btn" title="Heading" onclick="rteHeading('${rteId}')" style="font-size:11px;font-weight:700;width:36px">H3</button>
+    <div class="rte-sep"></div>
+    <button type="button" class="rte-btn" title="Bullet list" onclick="rteCmd('insertUnorderedList','${rteId}')">&#9679;&#8212;</button>
+    <button type="button" class="rte-btn" title="Numbered list" onclick="rteCmd('insertOrderedList','${rteId}')">1&#8212;</button>
+    <div class="rte-sep"></div>
+    <button type="button" class="rte-btn" title="Increase indent" onclick="rteCmd('indent','${rteId}')">&#8677;</button>
+    <button type="button" class="rte-btn" title="Decrease indent" onclick="rteCmd('outdent','${rteId}')">&#8676;</button>
+    <div class="rte-sep"></div>
+    <button type="button" class="rte-btn" title="Clear formatting" onclick="rteClear('${rteId}')" style="font-size:10px;width:36px;color:var(--grey)">Clear</button>
+  </div>
+  <div class="rte-editor" id="${rteId}" contenteditable="true"
+    data-placeholder="Describe the activation step by step. What should the hotel team prepare, buy, and do? This appears in the detail drawer on the live calendar."
+    onkeydown="rteKeyDown(event,'${rteId}')">${existingHtml||''}</div>
+  <div class="rte-hint">&#9998; Tip: Select text first, then click a format button. Use <strong>Bullet list</strong> for activity steps. Use <strong>H3</strong> for section headings. Use <strong>Bold</strong> to highlight key actions.</div>
+</div>`;
+}
+
+function initRTE(context){
+  // Nothing needed — contenteditable handles it
+}
+
+function rteCmd(cmd, rteId){
+  const el=document.getElementById(rteId);
+  if(!el) return;
+  el.focus();
+  document.execCommand(cmd, false, null);
+}
+
+function rteHeading(rteId){
+  const el=document.getElementById(rteId);
+  if(!el) return;
+  el.focus();
+  const sel=window.getSelection();
+  if(sel.rangeCount===0) return;
+  const range=sel.getRangeAt(0);
+  // Check if already in a heading
+  let node=range.commonAncestorContainer;
+  if(node.nodeType===3) node=node.parentNode;
+  if(node.tagName==='H3'||node.closest('h3')){
+    document.execCommand('formatBlock',false,'p');
+  } else {
+    document.execCommand('formatBlock',false,'h3');
+  }
+}
+
+function rteKeyDown(e, rteId){
+  // Tab for indent
+  if(e.key==='Tab'){
+    e.preventDefault();
+    document.execCommand(e.shiftKey?'outdent':'indent',false,null);
+  }
+}
+
+function rteClear(rteId){
+  const el=document.getElementById(rteId);
+  if(!el) return;
+  el.focus();
+  const sel=window.getSelection();
+  if(sel&&sel.rangeCount>0&&!sel.isCollapsed){
+    document.execCommand('removeFormat',false,null);
+    document.execCommand('formatBlock',false,'p');
+  }
+}
+
+function getRTEContent(rteId){
+  const el=document.getElementById(rteId);
+  if(!el) return '';
+  // Clean up empty tags
+  let html=el.innerHTML.trim();
+  html=html.replace(/<p><br><\/p>/g,'').replace(/<p><\/p>/g,'');
+  return html;
+}
+
+// ─── FORM ────────────────────────────────────────────────────────────────────
+function buildForm(evt, context){
+  const rteId = 'rte-'+context;
+  selectedGoals = evt?.goals||[];
+  return `
+  <div class="form-section-label">&#9775; Basic details</div>
+  <div class="form-row single">
+    <div class="form-group">
+      <label class="form-label">Title <span class="req">*</span></label>
+      <input class="form-input" id="f-title" placeholder="e.g. Earth Day \u2014 Spark: Greener Stay Moment" value="${evt?.title||''}" maxlength="80">
+      <div class="char-count"><span id="title-count">${(evt?.title||'').length}</span>/80</div>
+    </div>
+  </div>
+  <div class="form-row triple">
+    <div class="form-group">
+      <label class="form-label">Stream <span class="req">*</span></label>
+      <select class="form-input" id="f-team">
+        <option value="">Select\u2026</option>
+        <option value="mkt"${evt?.team==='mkt'?' selected':''}>Marketing</option>
+        <option value="sus"${evt?.team==='sus'?' selected':''}>Sustainability</option>
+        <option value="pc"${evt?.team==='pc'?' selected':''}>People &amp; Culture</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Date <span class="req">*</span></label>
+      <input class="form-input" id="f-date" type="date" value="${evt?.date||''}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Audience</label>
+      <select class="form-input" id="f-audience">
+        <option value="guests"${(evt?.audience||'guests')==='guests'?' selected':''}>Guests</option>
+        <option value="colleagues"${evt?.audience==='colleagues'?' selected':''}>Colleagues</option>
+        <option value="both"${evt?.audience==='both'?' selected':''}>Both</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">Tier (Marketing only)</label>
+      <select class="form-input" id="f-tier">
+        <option value="">No tier / N/A</option>
+        <option value="spark"${evt?.tier==='spark'?' selected':''}>&#9679; Spark \u2014 Must do</option>
+        <option value="glow"${evt?.tier==='glow'?' selected':''}>&#9679; Glow \u2014 Enhanced</option>
+        <option value="flare"${evt?.tier==='flare'?' selected':''}>&#9679; Flare \u2014 Headline</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Status</label>
+      <select class="form-input" id="f-status">
+        <option value="draft"${(!evt||evt?.status==='draft')?' selected':''}>Draft \u2014 not visible on calendar</option>
+        <option value="published"${evt?.status==='published'?' selected':''}>Published \u2014 live on calendar</option>
+      </select>
+    </div>
+  </div>
+
+  <hr class="form-divider">
+  <div class="form-section-label">&#9998; Content</div>
+  <div class="form-row single">
+    <div class="form-group">
+      <label class="form-label">Short summary <span class="req">*</span></label>
+      <input class="form-input" id="f-summary" placeholder="One sentence shown on hover and top of the drawer (max 140 chars)" value="${evt?.summary||''}" maxlength="140">
+      <div class="char-count"><span id="summary-count">${(evt?.summary||'').length}</span>/140</div>
+    </div>
+  </div>
+  <div class="form-row single">
+    <div class="form-group">
+      <label class="form-label">Full details &amp; activity instructions</label>
+      ${buildRTE(evt?.body||'', rteId)}
+    </div>
+  </div>
+
+  <hr class="form-divider">
+  <div class="form-section-label">&#9745; Activation goals</div>
+  <div class="form-group" style="margin-bottom:14px">
+    <div class="form-hint" style="margin-bottom:8px">Tick all that apply. These appear as tags on the detail panel.</div>
+    ${buildGoalsPicker(selectedGoals)}
+  </div>
+
+  <hr class="form-divider">
+  <div class="form-section-label">&#128196; Assets</div>
+  <div class="form-row single">
+    <div class="form-group">
+      <label class="form-label">Downloadable files</label>
+      <div class="upload-zone" onclick="showToast('Asset uploads connect to cloud storage in the full version')">
+        <div class="upload-zone-text">&#128196; <strong>Click to attach files</strong> or drag and drop<br>
+        <span style="font-size:11px">PDF, PNG, PPTX, DOCX \u2014 max 50MB each</span></div>
+      </div>
+      <div class="form-hint">File uploads are simulated in this preview. The live version connects to the HC51 asset library.</div>
+    </div>
+  </div>`;
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────────────────
+function openModal(prefillMonth){
+  editingId=null;
+  document.getElementById('modal-title').textContent='Add new initiative';
+  document.getElementById('modal-body').innerHTML=buildForm(null,'modal');
+  document.getElementById('modal-overlay').classList.add('open');
+  attachFormListeners();
+  if(prefillMonth) setTimeout(()=>{const d=document.getElementById('f-date');if(d)d.value=`2026-${String(prefillMonth).padStart(2,'0')}-01`;},60);
+}
+
+function editEvent(id){
+  const evt=getAllEvents().find(e=>e.id===id);
+  if(!evt) return;
+  editingId=id;
+  document.getElementById('modal-title').textContent='Edit initiative';
+  document.getElementById('modal-body').innerHTML=buildForm(evt,'modal');
+  document.getElementById('modal-overlay').classList.add('open');
+  attachFormListeners();
+}
+
+function closeModal(){
+  document.getElementById('modal-overlay').classList.remove('open');
+  editingId=null;
+}
+
+function handleOverlayClick(e){
+  if(e.target===document.getElementById('modal-overlay')) closeModal();
+}
+
+function attachFormListeners(){
+  const ti=document.getElementById('f-title');
+  const su=document.getElementById('f-summary');
+  if(ti) ti.addEventListener('input',function(){document.getElementById('title-count').textContent=this.value.length;});
+  if(su) su.addEventListener('input',function(){document.getElementById('summary-count').textContent=this.value.length;});
+}
+
+// ─── SAVE ────────────────────────────────────────────────────────────────────
+function saveForm(statusOverride, context){
+  const rteId='rte-'+(context||'modal');
+  const title=document.getElementById('f-title')?.value?.trim();
+  const team=document.getElementById('f-team')?.value;
+  const date=document.getElementById('f-date')?.value;
+  const audience=document.getElementById('f-audience')?.value||'guests';
+  const tier=document.getElementById('f-tier')?.value||null;
+  const summary=document.getElementById('f-summary')?.value?.trim();
+  const bodyHtml=getRTEContent(rteId);
+  const goals=collectGoals();
+  const status=statusOverride||document.getElementById('f-status')?.value||'draft';
+
+  if(!title){showToast('Please add a title','error');return;}
+  if(!team){showToast('Please select a stream','error');return;}
+  if(!date){showToast('Please set a date','error');return;}
+  if(!summary){showToast('Please add a summary','error');return;}
+
+  const payload={title,team,date,audience,tier:tier||null,status,summary,body:bodyHtml,goals};
+
+  if(editingId){
+    const idx=LOCAL_EVENTS.findIndex(e=>e.id===editingId);
+    if(idx>=0){LOCAL_EVENTS[idx]={...LOCAL_EVENTS[idx],...payload};}
+    else{payload.id=genId();LOCAL_EVENTS.push(payload);}
+  } else {
+    payload.id=genId();
+    LOCAL_EVENTS.push(payload);
+  }
+
+  saveLocal(); closeModal(); updateStats(); renderMonthPills(); renderTable();
+  if(context==='inline') showView('initiatives');
+  showToast(status==='published'?'Initiative published \u2713':'Saved as draft','success');
+}
+
+function deleteEvent(id){
+  if(!confirm('Delete this initiative? This cannot be undone.')) return;
+  LOCAL_EVENTS=LOCAL_EVENTS.filter(e=>e.id!==id);
+  saveLocal(); updateStats(); renderMonthPills(); renderTable();
+  showToast('Initiative deleted');
+}
+
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+let _tt;
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show'+(type?' '+type:'');
+  clearTimeout(_tt); _tt=setTimeout(()=>{t.className='toast';},3000);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+showView('initiatives');
+</script>
+</body>
+</html>
